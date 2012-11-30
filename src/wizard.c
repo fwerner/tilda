@@ -273,6 +273,8 @@ static void wizard_closed ()
     const gchar *closetab_key = GET_BUTTON_LABEL("button_keybinding_closetab");
     const gchar *nexttab_key = GET_BUTTON_LABEL("button_keybinding_nexttab");
     const gchar *prevtab_key = GET_BUTTON_LABEL("button_keybinding_prevtab");
+    const gchar *movetableft_key = GET_BUTTON_LABEL("button_keybinding_movetableft");
+    const gchar *movetabright_key = GET_BUTTON_LABEL("button_keybinding_movetabright");
     const gchar *copy_key = GET_BUTTON_LABEL("button_keybinding_copy");
     const gchar *paste_key = GET_BUTTON_LABEL("button_keybinding_paste");
     const gchar *quit_key = GET_BUTTON_LABEL("button_keybinding_quit");
@@ -307,6 +309,10 @@ static void wizard_closed ()
         return;
     if (!validate_keybinding(prevtab_key, wizard_window, _("The keybinding you chose for \"Previous Tab\" is invalid. Please choose another.")))
         return;
+    if (!validate_keybinding(movetableft_key, wizard_window, _("The keybinding you chose for \"Move Tab to Left\" is invalid. Please choose another.")))
+        return;
+    if (!validate_keybinding(movetabright_key, wizard_window, _("The keybinding you chose for \"Move Tab to Right\" is invalid. Please choose another.")))
+        return;
     if (!validate_keybinding(copy_key, wizard_window, _("The keybinding you chose for \"Copy\" is invalid. Please choose another.")))
         return;
     if (!validate_keybinding(paste_key, wizard_window, _("The keybinding you chose for \"Paste\" is invalid. Please choose another.")))
@@ -340,6 +346,8 @@ static void wizard_closed ()
     config_setstr ("closetab_key", closetab_key);
     config_setstr ("nexttab_key", nexttab_key);
     config_setstr ("prevtab_key", prevtab_key);
+    config_setstr ("movetableft_key", movetableft_key);
+    config_setstr ("movetabright_key", movetabright_key);
     config_setstr ("copy_key", copy_key);
     config_setstr ("paste_key", paste_key);
     config_setstr ("quit_key", quit_key);
@@ -1388,24 +1396,26 @@ static void button_keybinding_clicked_cb (GtkWidget *w)
     const GtkWidget *wizard_window = glade_xml_get_widget (xml, "wizard_window");
 
     /* Get all my keybinding buttons. */
-    const GtkWidget *button_keybinding_pulldown =  glade_xml_get_widget (xml, "button_keybinding_pulldown");
-    const GtkWidget *button_keybinding_addtab =    glade_xml_get_widget (xml, "button_keybinding_addtab");
-    const GtkWidget *button_keybinding_closetab =  glade_xml_get_widget (xml, "button_keybinding_closetab"); 
-    const GtkWidget *button_keybinding_nexttab =   glade_xml_get_widget (xml, "button_keybinding_nexttab");
-    const GtkWidget *button_keybinding_prevtab =   glade_xml_get_widget (xml, "button_keybinding_prevtab");
-    const GtkWidget *button_keybinding_copy =      glade_xml_get_widget (xml, "button_keybinding_copy");
-    const GtkWidget *button_keybinding_paste =     glade_xml_get_widget (xml, "button_keybinding_paste");
-    const GtkWidget *button_keybinding_quit =      glade_xml_get_widget (xml, "button_keybinding_quit");
-    const GtkWidget *button_keybinding_gototab1 =  glade_xml_get_widget (xml, "button_keybinding_gototab1");
-    const GtkWidget *button_keybinding_gototab2 =  glade_xml_get_widget (xml, "button_keybinding_gototab2");
-    const GtkWidget *button_keybinding_gototab3 =  glade_xml_get_widget (xml, "button_keybinding_gototab3");
-    const GtkWidget *button_keybinding_gototab4 =  glade_xml_get_widget (xml, "button_keybinding_gototab4");
-    const GtkWidget *button_keybinding_gototab5 =  glade_xml_get_widget (xml, "button_keybinding_gototab5");
-    const GtkWidget *button_keybinding_gototab6 =  glade_xml_get_widget (xml, "button_keybinding_gototab6");
-    const GtkWidget *button_keybinding_gototab7 =  glade_xml_get_widget (xml, "button_keybinding_gototab7");
-    const GtkWidget *button_keybinding_gototab8 =  glade_xml_get_widget (xml, "button_keybinding_gototab8");
-    const GtkWidget *button_keybinding_gototab9 =  glade_xml_get_widget (xml, "button_keybinding_gototab9");
-    const GtkWidget *button_keybinding_gototab10 = glade_xml_get_widget (xml, "button_keybinding_gototab10");
+    const GtkWidget *button_keybinding_pulldown =     glade_xml_get_widget (xml, "button_keybinding_pulldown");
+    const GtkWidget *button_keybinding_addtab =       glade_xml_get_widget (xml, "button_keybinding_addtab");
+    const GtkWidget *button_keybinding_closetab =     glade_xml_get_widget (xml, "button_keybinding_closetab"); 
+    const GtkWidget *button_keybinding_nexttab =      glade_xml_get_widget (xml, "button_keybinding_nexttab");
+    const GtkWidget *button_keybinding_prevtab =      glade_xml_get_widget (xml, "button_keybinding_prevtab");
+    const GtkWidget *button_keybinding_movetableft =  glade_xml_get_widget (xml, "button_keybinding_movetableft");
+    const GtkWidget *button_keybinding_movetabright = glade_xml_get_widget (xml, "button_keybinding_movetabright");
+    const GtkWidget *button_keybinding_copy =         glade_xml_get_widget (xml, "button_keybinding_copy");
+    const GtkWidget *button_keybinding_paste =        glade_xml_get_widget (xml, "button_keybinding_paste");
+    const GtkWidget *button_keybinding_quit =         glade_xml_get_widget (xml, "button_keybinding_quit");
+    const GtkWidget *button_keybinding_gototab1 =     glade_xml_get_widget (xml, "button_keybinding_gototab1");
+    const GtkWidget *button_keybinding_gototab2 =     glade_xml_get_widget (xml, "button_keybinding_gototab2");
+    const GtkWidget *button_keybinding_gototab3 =     glade_xml_get_widget (xml, "button_keybinding_gototab3");
+    const GtkWidget *button_keybinding_gototab4 =     glade_xml_get_widget (xml, "button_keybinding_gototab4");
+    const GtkWidget *button_keybinding_gototab5 =     glade_xml_get_widget (xml, "button_keybinding_gototab5");
+    const GtkWidget *button_keybinding_gototab6 =     glade_xml_get_widget (xml, "button_keybinding_gototab6");
+    const GtkWidget *button_keybinding_gototab7 =     glade_xml_get_widget (xml, "button_keybinding_gototab7");
+    const GtkWidget *button_keybinding_gototab8 =     glade_xml_get_widget (xml, "button_keybinding_gototab8");
+    const GtkWidget *button_keybinding_gototab9 =     glade_xml_get_widget (xml, "button_keybinding_gototab9");
+    const GtkWidget *button_keybinding_gototab10 =    glade_xml_get_widget (xml, "button_keybinding_gototab10");
 
     /* Make the preferences window and buttons non-sensitive while we are grabbing keys. */
     gtk_widget_set_sensitive (GTK_WIDGET(wizard_notebook), FALSE);
@@ -1415,6 +1425,8 @@ static void button_keybinding_clicked_cb (GtkWidget *w)
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_closetab), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_nexttab), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_prevtab), FALSE);
+    gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_movetableft), FALSE);
+    gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_movetabright), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_copy), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_paste), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_quit), FALSE);
@@ -1453,6 +1465,8 @@ static void button_keybinding_clicked_cb (GtkWidget *w)
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_closetab), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_nexttab), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_prevtab), TRUE);
+    gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_movetableft), TRUE);
+    gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_movetabright), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_copy), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_paste), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET(button_keybinding_quit), TRUE);
@@ -1616,6 +1630,8 @@ static void set_wizard_state_from_config ()
     BUTTON_LABEL_FROM_CFG ("button_keybinding_closetab", "closetab_key");
     BUTTON_LABEL_FROM_CFG ("button_keybinding_nexttab", "nexttab_key");
     BUTTON_LABEL_FROM_CFG ("button_keybinding_prevtab", "prevtab_key");
+    BUTTON_LABEL_FROM_CFG ("button_keybinding_movetableft", "movetableft_key");
+    BUTTON_LABEL_FROM_CFG ("button_keybinding_movetabright", "movetabright_key");
     BUTTON_LABEL_FROM_CFG ("button_keybinding_copy", "copy_key");
     BUTTON_LABEL_FROM_CFG ("button_keybinding_paste", "paste_key");
     BUTTON_LABEL_FROM_CFG ("button_keybinding_quit", "quit_key");
@@ -1720,6 +1736,8 @@ static void connect_wizard_signals ()
     CONNECT_SIGNAL ("button_keybinding_closetab","clicked",button_keybinding_clicked_cb);
     CONNECT_SIGNAL ("button_keybinding_nexttab","clicked",button_keybinding_clicked_cb);
     CONNECT_SIGNAL ("button_keybinding_prevtab","clicked",button_keybinding_clicked_cb);
+    CONNECT_SIGNAL ("button_keybinding_movetableft","clicked",button_keybinding_clicked_cb);
+    CONNECT_SIGNAL ("button_keybinding_movetabright","clicked",button_keybinding_clicked_cb);
     CONNECT_SIGNAL ("button_keybinding_copy","clicked",button_keybinding_clicked_cb);
     CONNECT_SIGNAL ("button_keybinding_paste","clicked",button_keybinding_clicked_cb);
     CONNECT_SIGNAL ("button_keybinding_gototab1","clicked",button_keybinding_clicked_cb);
